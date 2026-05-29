@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BuilderVault — On-chain Reputation for Web3 Builders</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; }
+    nav { padding: 1.5rem 2rem; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; }
+    nav .logo { font-size: 1.2rem; font-weight: 600; letter-spacing: -0.5px; }
+    nav .badge { font-size: 0.75rem; background: #1a1a2e; color: #7c6af7; padding: 4px 12px; border-radius: 20px; border: 1px solid #7c6af7; }
+    .hero { text-align: center; padding: 6rem 2rem 4rem; }
+    .season-tag { display: inline-block; font-size: 0.75rem; background: #0f2a1a; color: #22c55e; padding: 4px 14px; border-radius: 20px; border: 1px solid #22c55e; margin-bottom: 1.5rem; }
+    h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700; line-height: 1.1; letter-spacing: -1px; margin-bottom: 1.5rem; }
+    h1 span { color: #7c6af7; }
+    .subtitle { font-size: 1.1rem; color: #888; max-width: 520px; margin: 0 auto 3rem; line-height: 1.7; }
+    .contract-box { background: #111; border: 1px solid #222; border-radius: 12px; padding: 1.5rem 2rem; max-width: 600px; margin: 0 auto 4rem; text-align: left; }
+    .contract-box .label { font-size: 0.7rem; color: #555; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .contract-box .address { font-family: monospace; font-size: 0.85rem; color: #7c6af7; word-break: break-all; }
+    .contract-box .network { font-size: 0.75rem; color: #444; margin-top: 0.75rem; }
+    .stats { display: flex; justify-content: center; gap: 3rem; padding: 3rem 2rem; border-top: 1px solid #111; border-bottom: 1px solid #111; margin-bottom: 4rem; }
+    .stat { text-align: center; }
+    .stat .number { font-size: 2rem; font-weight: 700; color: #7c6af7; }
+    .stat .label { font-size: 0.8rem; color: #555; margin-top: 0.25rem; }
+    .seasons { padding: 2rem; max-width: 800px; margin: 0 auto 4rem; }
+    .seasons h2 { text-align: center; font-size: 1.5rem; margin-bottom: 2rem; color: #888; }
+    .season-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+    .season-card { background: #111; border: 1px solid #1a1a1a; border-radius: 10px; padding: 1.25rem; }
+    .season-card.active { border-color: #7c6af7; background: #0d0d1a; }
+    .season-card .s-num { font-size: 0.7rem; color: #555; margin-bottom: 0.5rem; }
+    .season-card.active .s-num { color: #7c6af7; }
+    .season-card .s-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.4rem; }
+    .season-card .s-desc { font-size: 0.8rem; color: #555; line-height: 1.5; }
+    footer { text-align: center; padding: 2rem; color: #333; font-size: 0.8rem; border-top: 1px solid #111; }
+    footer a { color: #7c6af7; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="logo">BuilderVault</div>
+    <div class="badge">OPN Chain · Season 1</div>
+  </nav>
+
+  <div class="hero">
+    <div class="season-tag">🟢 Season 1 Live — DeFi & Open Finance</div>
+    <h1>Your on-chain identity,<br><span>built one season at a time.</span></h1>
+    <p class="subtitle">BuilderVault is an on-chain reputation platform for Web3 builders. Deposit tokens as proof of commitment. Build your identity across 6 seasons on OPN Chain.</p>
+
+    <div class="contract-box">
+      <div class="label">Deployed Contract — Season 1</div>
+      <div class="address">0x876d81a05900aa02Da17320cB521ce1FF19F720A</div>
+      <div class="network">OPN Chain Testnet · Chain ID 984 · Block 17532902</div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="number">1</div><div class="label">Season Live</div></div>
+    <div class="stat"><div class="number">6</div><div class="label">Total Seasons</div></div>
+    <div class="stat"><div class="number">OPN</div><div class="label">Chain</div></div>
+  </div>
+
+  <div class="seasons">
+    <h2>6-Season Roadmap</h2>
+    <div class="season-grid">
+      <div class="season-card active">
+        <div class="s-num">SEASON 1 · NOW</div>
+        <div class="s-title">Builder Treasury</div>
+        <div class="s-desc">Deposit tokens on-chain as proof of commitment to your project.</div>
+      </div>
+      <div class="season-card">
+        <div class="s-num">SEASON 2</div>
+        <div class="s-title">Builder Profile</div>
+        <div class="s-desc">On-chain identity — wallet = verified profile.</div>
+      </div>
+      <div class="season-card">
+        <div class="s-num">SEASON 3</div>
+        <div class="s-title">Portfolio NFT</div>
+        <div class="s-desc">CV that lives on blockchain. Verifiable anywhere.</div>
+      </div>
+      <div class="season-card">
+        <div class="s-num">SEASON 4</div>
+        <div class="s-title">AI Mentor</div>
+        <div class="s-desc">AI analyzes your on-chain profile and guides your next steps.</div>
+      </div>
+      <div class="season-card">
+        <div class="s-num">SEASON 5</div>
+        <div class="s-title">Quest System</div>
+        <div class="s-desc">Gamified builder journey — XP, levels, exclusive badges.</div>
+      </div>
+      <div class="season-card">
+        <div class="s-num">SEASON 6</div>
+        <div class="s-title">Full Platform</div>
+        <div class="s-desc">All layers merged into one complete product.</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Built on <a href="https://testnet.iopn.tech/address/0x876d81a05900aa02Da17320cB521ce1FF19F720A" target="_blank">OPN Chain</a> · 
+    <a href="https://github.com/stablemindlabs/buildervault" target="_blank">GitHub</a> · 
+    Season 1 of 6
+  </footer>
+</body>
+</html>
