@@ -4,102 +4,377 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>BuilderVault — On-chain Reputation for Web3 Builders</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: system-ui, sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; }
-    nav { padding: 1.5rem 2rem; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; }
-    nav .logo { font-size: 1.2rem; font-weight: 600; letter-spacing: -0.5px; }
-    nav .badge { font-size: 0.75rem; background: #1a1a2e; color: #7c6af7; padding: 4px 12px; border-radius: 20px; border: 1px solid #7c6af7; }
-    .hero { text-align: center; padding: 6rem 2rem 4rem; }
+    nav { padding: 1.25rem 2rem; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 1.2rem; font-weight: 600; }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .badge { font-size: 0.75rem; background: #0f2a1a; color: #22c55e; padding: 4px 12px; border-radius: 20px; border: 1px solid #22c55e; }
+    .btn { padding: 8px 20px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; border: none; transition: opacity 0.2s; }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: #7c6af7; color: #fff; }
+    .btn-outline { background: transparent; color: #7c6af7; border: 1px solid #7c6af7; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .hero { text-align: center; padding: 5rem 2rem 3rem; }
     .season-tag { display: inline-block; font-size: 0.75rem; background: #0f2a1a; color: #22c55e; padding: 4px 14px; border-radius: 20px; border: 1px solid #22c55e; margin-bottom: 1.5rem; }
-    h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700; line-height: 1.1; letter-spacing: -1px; margin-bottom: 1.5rem; }
+    h1 { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 700; line-height: 1.1; letter-spacing: -1px; margin-bottom: 1rem; }
     h1 span { color: #7c6af7; }
-    .subtitle { font-size: 1.1rem; color: #888; max-width: 520px; margin: 0 auto 3rem; line-height: 1.7; }
-    .contract-box { background: #111; border: 1px solid #222; border-radius: 12px; padding: 1.5rem 2rem; max-width: 600px; margin: 0 auto 4rem; text-align: left; }
-    .contract-box .label { font-size: 0.7rem; color: #555; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
-    .contract-box .address { font-family: monospace; font-size: 0.85rem; color: #7c6af7; word-break: break-all; }
-    .contract-box .network { font-size: 0.75rem; color: #444; margin-top: 0.75rem; }
-    .stats { display: flex; justify-content: center; gap: 3rem; padding: 3rem 2rem; border-top: 1px solid #111; border-bottom: 1px solid #111; margin-bottom: 4rem; }
+    .subtitle { font-size: 1rem; color: #888; max-width: 480px; margin: 0 auto 2.5rem; line-height: 1.7; }
+
+    /* Score Card */
+    .score-section { max-width: 680px; margin: 0 auto 3rem; padding: 0 1rem; }
+    .score-card { background: #111; border: 1px solid #222; border-radius: 16px; padding: 2rem; }
+    .score-card.connected { border-color: #7c6af7; }
+    .connect-prompt { text-align: center; padding: 1rem 0; }
+    .connect-prompt p { color: #555; margin-bottom: 1.5rem; font-size: 0.9rem; }
+    .wallet-info { display: none; }
+    .wallet-info.show { display: block; }
+    .wallet-address { font-family: monospace; font-size: 0.8rem; color: #7c6af7; background: #0d0d1a; padding: 6px 12px; border-radius: 6px; display: inline-block; margin-bottom: 1.5rem; }
+    .score-display { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+    .score-item { background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 10px; padding: 1rem; text-align: center; }
+    .score-item .number { font-size: 1.8rem; font-weight: 700; color: #7c6af7; }
+    .score-item .label { font-size: 0.7rem; color: #555; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .level-badge { display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin-bottom: 1.5rem; }
+    .level-newcomer { background: #1a1a1a; color: #888; border: 1px solid #333; }
+    .level-builder { background: #0f2a1a; color: #22c55e; border: 1px solid #22c55e; }
+    .level-senior { background: #1a1400; color: #f59e0b; border: 1px solid #f59e0b; }
+    .level-master { background: #1a0d2e; color: #a855f7; border: 1px solid #a855f7; }
+    .loading-text { color: #555; font-size: 0.85rem; text-align: center; padding: 1rem 0; }
+
+    /* Deposit Form */
+    .deposit-form { border-top: 1px solid #1a1a1a; padding-top: 1.5rem; margin-top: 0.5rem; display: none; }
+    .deposit-form.show { display: block; }
+    .deposit-form h3 { font-size: 0.85rem; color: #888; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .form-input { width: 100%; background: #0d0d0d; border: 1px solid #222; border-radius: 8px; padding: 10px 14px; color: #fff; font-size: 0.85rem; outline: none; }
+    .form-input:focus { border-color: #7c6af7; }
+    .form-input::placeholder { color: #444; }
+    .tx-status { font-size: 0.8rem; padding: 8px 12px; border-radius: 6px; margin-top: 0.75rem; display: none; }
+    .tx-status.show { display: block; }
+    .tx-status.success { background: #0f2a1a; color: #22c55e; border: 1px solid #22c55e; }
+    .tx-status.error { background: #2a0f0f; color: #ef4444; border: 1px solid #ef4444; }
+    .tx-status.pending { background: #1a1400; color: #f59e0b; border: 1px solid #f59e0b; }
+
+    /* Stats */
+    .stats { display: flex; justify-content: center; gap: 3rem; padding: 2.5rem 2rem; border-top: 1px solid #111; border-bottom: 1px solid #111; margin-bottom: 3rem; }
     .stat { text-align: center; }
-    .stat .number { font-size: 2rem; font-weight: 700; color: #7c6af7; }
-    .stat .label { font-size: 0.8rem; color: #555; margin-top: 0.25rem; }
-    .seasons { padding: 2rem; max-width: 800px; margin: 0 auto 4rem; }
-    .seasons h2 { text-align: center; font-size: 1.5rem; margin-bottom: 2rem; color: #888; }
+    .stat .number { font-size: 1.8rem; font-weight: 700; color: #7c6af7; }
+    .stat .label { font-size: 0.75rem; color: #555; margin-top: 4px; }
+
+    /* Seasons */
+    .seasons { padding: 0 2rem; max-width: 800px; margin: 0 auto 3rem; }
+    .seasons h2 { text-align: center; font-size: 1.3rem; color: #888; margin-bottom: 1.5rem; font-weight: 500; }
     .season-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
     .season-card { background: #111; border: 1px solid #1a1a1a; border-radius: 10px; padding: 1.25rem; }
     .season-card.active { border-color: #7c6af7; background: #0d0d1a; }
-    .season-card .s-num { font-size: 0.7rem; color: #555; margin-bottom: 0.5rem; }
+    .s-num { font-size: 0.7rem; color: #444; margin-bottom: 0.5rem; }
     .season-card.active .s-num { color: #7c6af7; }
-    .season-card .s-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.4rem; }
-    .season-card .s-desc { font-size: 0.8rem; color: #555; line-height: 1.5; }
-    footer { text-align: center; padding: 2rem; color: #333; font-size: 0.8rem; border-top: 1px solid #111; }
+    .s-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.4rem; }
+    .s-desc { font-size: 0.78rem; color: #555; line-height: 1.5; }
+
+    footer { text-align: center; padding: 2rem; color: #333; font-size: 0.75rem; border-top: 1px solid #111; }
     footer a { color: #7c6af7; text-decoration: none; }
   </style>
 </head>
 <body>
-  <nav>
-    <div class="logo">BuilderVault</div>
+
+<nav>
+  <div class="logo">BuilderVault</div>
+  <div class="nav-right">
     <div class="badge">OPN Chain · Season 1</div>
-  </nav>
+    <button class="btn btn-primary" id="connectBtn" onclick="connectWallet()">Connect Wallet</button>
+  </div>
+</nav>
 
-  <div class="hero">
-    <div class="season-tag">🟢 Season 1 Live — DeFi & Open Finance</div>
-    <h1>Your on-chain identity,<br><span>built one season at a time.</span></h1>
-    <p class="subtitle">BuilderVault is an on-chain reputation platform for Web3 builders. Deposit tokens as proof of commitment. Build your identity across 6 seasons on OPN Chain.</p>
+<div class="hero">
+  <div class="season-tag">🟢 Season 1 Live — DeFi & Open Finance</div>
+  <h1>Your on-chain identity,<br><span>built one season at a time.</span></h1>
+  <p class="subtitle">BuilderVault tracks your real contribution on OPN Chain. The more you deploy, the higher your score.</p>
+</div>
 
-    <div class="contract-box">
-      <div class="label">Deployed Contract — Season 1</div>
-      <div class="address">0x876d81a05900aa02Da17320cB521ce1FF19F720A</div>
-      <div class="network">OPN Chain Testnet · Chain ID 984 · Block 17532902</div>
+<!-- Score Card -->
+<div class="score-section">
+  <div class="score-card" id="scoreCard">
+
+    <!-- Not connected -->
+    <div class="connect-prompt" id="connectPrompt">
+      <p>Connect your wallet to see your BuilderVault score based on your OPN Chain activity.</p>
+      <button class="btn btn-primary" onclick="connectWallet()">Connect MetaMask</button>
+    </div>
+
+    <!-- Connected -->
+    <div class="wallet-info" id="walletInfo">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <div class="wallet-address" id="walletAddress">0x...</div>
+        <span class="level-badge level-newcomer" id="levelBadge">Newcomer</span>
+      </div>
+
+      <div class="loading-text" id="loadingText">Scanning OPN Chain activity...</div>
+
+      <div class="score-display" id="scoreDisplay" style="display:none;">
+        <div class="score-item">
+          <div class="number" id="scoreDeployCount">0</div>
+          <div class="label">Contracts Deployed</div>
+        </div>
+        <div class="score-item">
+          <div class="number" id="scorePoints">0</div>
+          <div class="label">Builder Score</div>
+        </div>
+        <div class="score-item">
+          <div class="number" id="scoreDeposit">0</div>
+          <div class="label">OPN Deposited</div>
+        </div>
+      </div>
+
+      <!-- Deposit Form -->
+      <div class="deposit-form" id="depositForm">
+        <h3>Lock Commitment</h3>
+        <div class="form-row">
+          <input class="form-input" id="projectNameInput" placeholder="Your project name" type="text" />
+          <input class="form-input" id="depositAmount" placeholder="Amount (OPN)" type="number" min="0" step="0.001" />
+        </div>
+        <button class="btn btn-primary" style="width:100%;" id="depositBtn" onclick="deposit()">Deposit as Commitment</button>
+        <div class="tx-status" id="txStatus"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stats">
+  <div class="stat"><div class="number" id="statBuilders">—</div><div class="label">Total Builders</div></div>
+  <div class="stat"><div class="number" id="statDeployed">—</div><div class="label">Contracts on OPN</div></div>
+  <div class="stat"><div class="number">S1</div><div class="label">Season Active</div></div>
+</div>
+
+<!-- Seasons -->
+<div class="seasons">
+  <h2>6-Season Roadmap</h2>
+  <div class="season-grid">
+    <div class="season-card active">
+      <div class="s-num">SEASON 1 · NOW</div>
+      <div class="s-title">Builder Treasury</div>
+      <div class="s-desc">Score based on contracts deployed on OPN Chain. Deposit tokens as commitment.</div>
+    </div>
+    <div class="season-card">
+      <div class="s-num">SEASON 2</div>
+      <div class="s-title">Builder Profile</div>
+      <div class="s-desc">On-chain identity — wallet = verified profile.</div>
+    </div>
+    <div class="season-card">
+      <div class="s-num">SEASON 3</div>
+      <div class="s-title">Portfolio NFT</div>
+      <div class="s-desc">CV that lives on blockchain. Verifiable anywhere.</div>
+    </div>
+    <div class="season-card">
+      <div class="s-num">SEASON 4</div>
+      <div class="s-title">AI Mentor</div>
+      <div class="s-desc">AI analyzes your on-chain profile and guides your next steps.</div>
+    </div>
+    <div class="season-card">
+      <div class="s-num">SEASON 5</div>
+      <div class="s-title">Quest System</div>
+      <div class="s-desc">Gamified builder journey — XP, levels, exclusive badges.</div>
+    </div>
+    <div class="season-card">
+      <div class="s-num">SEASON 6</div>
+      <div class="s-title">Full Platform</div>
+      <div class="s-desc">All layers merged into one complete product.</div>
     </div>
   </div>
+</div>
 
-  <div class="stats">
-    <div class="stat"><div class="number">1</div><div class="label">Season Live</div></div>
-    <div class="stat"><div class="number">6</div><div class="label">Total Seasons</div></div>
-    <div class="stat"><div class="number">OPN</div><div class="label">Chain</div></div>
-  </div>
+<footer>
+  Built on <a href="https://testnet.iopn.tech/address/0x876d81a05900aa02Da17320cB521ce1FF19F720A" target="_blank">OPN Chain</a> ·
+  <a href="https://github.com/stablemindlabs/buildervault" target="_blank">GitHub</a> ·
+  Season 1 of 6
+</footer>
 
-  <div class="seasons">
-    <h2>6-Season Roadmap</h2>
-    <div class="season-grid">
-      <div class="season-card active">
-        <div class="s-num">SEASON 1 · NOW</div>
-        <div class="s-title">Builder Treasury</div>
-        <div class="s-desc">Deposit tokens on-chain as proof of commitment to your project.</div>
-      </div>
-      <div class="season-card">
-        <div class="s-num">SEASON 2</div>
-        <div class="s-title">Builder Profile</div>
-        <div class="s-desc">On-chain identity — wallet = verified profile.</div>
-      </div>
-      <div class="season-card">
-        <div class="s-num">SEASON 3</div>
-        <div class="s-title">Portfolio NFT</div>
-        <div class="s-desc">CV that lives on blockchain. Verifiable anywhere.</div>
-      </div>
-      <div class="season-card">
-        <div class="s-num">SEASON 4</div>
-        <div class="s-title">AI Mentor</div>
-        <div class="s-desc">AI analyzes your on-chain profile and guides your next steps.</div>
-      </div>
-      <div class="season-card">
-        <div class="s-num">SEASON 5</div>
-        <div class="s-title">Quest System</div>
-        <div class="s-desc">Gamified builder journey — XP, levels, exclusive badges.</div>
-      </div>
-      <div class="season-card">
-        <div class="s-num">SEASON 6</div>
-        <div class="s-title">Full Platform</div>
-        <div class="s-desc">All layers merged into one complete product.</div>
-      </div>
-    </div>
-  </div>
+<script>
+const CONTRACT_ADDRESS = "0x876d81a05900aa02Da17320cB521ce1FF19F720A";
+const CONTRACT_ABI = [
+  "function deposit(string calldata _projectName) external payable",
+  "function withdraw() external",
+  "function getBuilderInfo(address _builder) external view returns (uint256 amount, string memory project, uint256 since)",
+  "function getStats() external view returns (uint256 builders, uint256 totalFunds)",
+  "function totalBuilders() external view returns (uint256)",
+  "function totalDeposited() external view returns (uint256)"
+];
 
-  <footer>
-    Built on <a href="https://testnet.iopn.tech/address/0x876d81a05900aa02Da17320cB521ce1FF19F720A" target="_blank">OPN Chain</a> · 
-    <a href="https://github.com/stablemindlabs/buildervault" target="_blank">GitHub</a> · 
-    Season 1 of 6
-  </footer>
+const OPN_CHAIN_ID = "0x3D8"; // 984 in hex
+const EXPLORER_API = "https://testnet.iopn.tech/api/v2";
+
+let provider, signer, contract, walletAddr;
+
+async function connectWallet() {
+  if (!window.ethereum) {
+    alert("MetaMask not found. Please install MetaMask first.");
+    return;
+  }
+
+  try {
+    // Request accounts
+    await window.ethereum.request({ method: "eth_requestAccounts" });
+
+    // Switch to OPN Chain
+    try {
+      await window.ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: OPN_CHAIN_ID }]
+      });
+    } catch (switchError) {
+      if (switchError.code === 4902) {
+        await window.ethereum.request({
+          method: "wallet_addEthereumChain",
+          params: [{
+            chainId: OPN_CHAIN_ID,
+            chainName: "OPN Chain Testnet",
+            nativeCurrency: { name: "OPN", symbol: "OPN", decimals: 18 },
+            rpcUrls: ["https://testnet-rpc.iopn.tech"],
+            blockExplorerUrls: ["https://testnet.iopn.tech"]
+          }]
+        });
+      }
+    }
+
+    provider = new ethers.BrowserProvider(window.ethereum);
+    signer = await provider.getSigner();
+    walletAddr = await signer.getAddress();
+    contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+    // Update UI
+    document.getElementById("connectBtn").textContent = walletAddr.slice(0,6) + "..." + walletAddr.slice(-4);
+    document.getElementById("connectBtn").classList.replace("btn-primary", "btn-outline");
+    document.getElementById("connectPrompt").style.display = "none";
+    document.getElementById("walletInfo").classList.add("show");
+    document.getElementById("walletAddress").textContent = walletAddr.slice(0,8) + "..." + walletAddr.slice(-6);
+    document.getElementById("scoreCard").classList.add("connected");
+
+    // Load data
+    await loadScore();
+    await loadStats();
+
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function loadScore() {
+  document.getElementById("loadingText").style.display = "block";
+  document.getElementById("scoreDisplay").style.display = "none";
+
+  try {
+    // Fetch contract creation transactions from explorer
+    let deployCount = 0;
+    try {
+      const res = await fetch(`${EXPLORER_API}/addresses/${walletAddr}/transactions?filter=to%3Dnull&limit=50`);
+      const data = await res.json();
+      if (data.items) {
+        deployCount = data.items.filter(tx => tx.to === null && tx.result === "success").length;
+      }
+    } catch(e) {
+      // fallback: try internal txs
+      deployCount = 0;
+    }
+
+    // Calculate score
+    let score = 0;
+    let level = "Newcomer";
+    let levelClass = "level-newcomer";
+
+    if (deployCount >= 11) { score = 100 + (deployCount - 11) * 10; level = "Master Builder"; levelClass = "level-master"; }
+    else if (deployCount >= 6) { score = 60 + (deployCount - 6) * 8; level = "Senior Builder"; levelClass = "level-senior"; }
+    else if (deployCount >= 3) { score = 30 + (deployCount - 3) * 10; level = "Builder"; levelClass = "level-builder"; }
+    else { score = deployCount * 10; level = "Newcomer"; levelClass = "level-newcomer"; }
+
+    // Get deposit info
+    let depositAmt = "0";
+    try {
+      const info = await contract.getBuilderInfo(walletAddr);
+      depositAmt = parseFloat(ethers.formatEther(info.amount)).toFixed(3);
+    } catch(e) {}
+
+    // Update UI
+    document.getElementById("scoreDeployCount").textContent = deployCount;
+    document.getElementById("scorePoints").textContent = score;
+    document.getElementById("scoreDeposit").textContent = depositAmt;
+
+    const badge = document.getElementById("levelBadge");
+    badge.textContent = level;
+    badge.className = "level-badge " + levelClass;
+
+    document.getElementById("loadingText").style.display = "none";
+    document.getElementById("scoreDisplay").style.display = "grid";
+    document.getElementById("depositForm").classList.add("show");
+
+  } catch(err) {
+    document.getElementById("loadingText").textContent = "Could not load score. Try again.";
+    console.error(err);
+  }
+}
+
+async function loadStats() {
+  try {
+    const stats = await contract.getStats();
+    document.getElementById("statBuilders").textContent = stats.builders.toString();
+
+    // Get total contracts on OPN from explorer
+    try {
+      const res = await fetch(`${EXPLORER_API}/stats`);
+      const data = await res.json();
+      if (data.total_contracts) {
+        document.getElementById("statDeployed").textContent = parseInt(data.total_contracts).toLocaleString();
+      }
+    } catch(e) {
+      document.getElementById("statDeployed").textContent = "—";
+    }
+  } catch(e) {}
+}
+
+async function deposit() {
+  const projectName = document.getElementById("projectNameInput").value.trim();
+  const amount = document.getElementById("depositAmount").value;
+
+  if (!projectName) { showStatus("Please enter your project name.", "error"); return; }
+  if (!amount || parseFloat(amount) <= 0) { showStatus("Please enter a valid deposit amount.", "error"); return; }
+
+  const btn = document.getElementById("depositBtn");
+  btn.disabled = true;
+  showStatus("Waiting for wallet confirmation...", "pending");
+
+  try {
+    const tx = await contract.deposit(projectName, {
+      value: ethers.parseEther(amount)
+    });
+    showStatus("Transaction submitted. Waiting for confirmation...", "pending");
+    await tx.wait();
+    showStatus(`✓ Deposited ${amount} OPN for "${projectName}". Transaction confirmed!`, "success");
+    await loadScore();
+    await loadStats();
+  } catch(err) {
+    showStatus("Transaction failed: " + (err.reason || err.message || "Unknown error"), "error");
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function showStatus(msg, type) {
+  const el = document.getElementById("txStatus");
+  el.textContent = msg;
+  el.className = "tx-status show " + type;
+}
+
+// Auto-connect if already connected
+window.addEventListener("load", async () => {
+  if (window.ethereum) {
+    const accounts = await window.ethereum.request({ method: "eth_accounts" });
+    if (accounts.length > 0) connectWallet();
+  }
+});
+</script>
 </body>
 </html>
