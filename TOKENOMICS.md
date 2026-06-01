@@ -125,15 +125,14 @@ Incentive to build more → more deploys → more BVLT
 
 ## Roadmap
 
-| Season | Quarter | Token Milestone |
+| Season | Quarter | Milestone |
 |---|---|---|
-| S1 | Q2 2026 (now) | BuilderTreasury live — foundation for BVLT |
-| S2 | Q2 2026 | BVLT token launch + Proof of Build mechanism |
-| S3 | Q3 2026 | Portfolio NFT — first major BVLT spend use case |
-| S4 | Q4 2026 | AI Mentor — premium BVLT subscription tier |
-| S5 | Q1 2027 | Quest System — BVLT rewards for on-chain challenges |
-| S6 | Q2 2027 | DEX liquidity live — BVLT fully tradeable on OPN Chain |
-
+| S1 | Now (Live) | BuilderTreasury — deploy scoring + commitment vault |
+| S2 | Q2 2026 | Identity & Reputation — on-chain builder profiles |
+| S3 | Q3 2026 | Portfolio NFT — verifiable on-chain credentials |
+| S4 | Q4 2026 | AI Mentor — personalized builder guidance |
+| S5 | Q1 2027 | Quest System & Guild — gamified builder journey |
+| S6 | Q2 2027 | Full Platform + BVLT Token Launch — proven utility, established community |
 ---
 
 ## Contract Addresses
