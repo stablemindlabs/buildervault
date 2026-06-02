@@ -1,0 +1,65 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="glow">
+      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#ffffff" flood-opacity="0.8"/>
+    </filter>
+  </defs>
+
+  <!-- Hexagon outer -->
+  <polygon 
+    points="100,18 168,58 168,138 100,178 32,138 32,58" 
+    fill="none" 
+    stroke="white" 
+    stroke-width="5" 
+    stroke-linejoin="round"
+    filter="url(#glow)"
+  />
+
+  <!-- Hexagon inner (smaller, subtle) -->
+  <polygon 
+    points="100,34 152,64 152,124 100,154 48,124 48,64" 
+    fill="none" 
+    stroke="white" 
+    stroke-width="1.5" 
+    opacity="0.25"
+  />
+
+  <!-- Left bracket < -->
+  <path 
+    d="M68 72 L50 98 L68 124" 
+    stroke="white" 
+    stroke-width="7" 
+    stroke-linecap="round" 
+    stroke-linejoin="round"
+    filter="url(#glow)"
+  />
+
+  <!-- Right bracket > -->
+  <path 
+    d="M132 72 L150 98 L132 124" 
+    stroke="white" 
+    stroke-width="7" 
+    stroke-linecap="round" 
+    stroke-linejoin="round"
+    filter="url(#glow)"
+  />
+
+  <!-- Forward slash / -->
+  <line 
+    x1="114" y1="72" 
+    x2="86" y2="124" 
+    stroke="white" 
+    stroke-width="7" 
+    stroke-linecap="round"
+    filter="url(#glow)"
+  />
+
+  <!-- Corner dots at hexagon vertices (node effect) -->
+  <circle cx="100" cy="18" r="4" fill="white" filter="url(#glow)"/>
+  <circle cx="168" cy="58" r="4" fill="white" filter="url(#glow)"/>
+  <circle cx="168" cy="138" r="4" fill="white" filter="url(#glow)"/>
+  <circle cx="100" cy="178" r="4" fill="white" filter="url(#glow)"/>
+  <circle cx="32" cy="138" r="4" fill="white" filter="url(#glow)"/>
+  <circle cx="32" cy="58" r="4" fill="white" filter="url(#glow)"/>
+
+</svg>
