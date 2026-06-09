@@ -1,21 +1,23 @@
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Link, useNavigate } from "react-router-dom";
 import { Logo } from "./Logo";
 import { useWallet } from "@/hooks/useWallet";
 
 const NAV = [
-  { label: "Home", href: "#home" },
-  { label: "How It Works", href: "#how" },
-  { label: "Levels", href: "#levels" },
-  { label: "Roadmap", href: "#roadmap" },
-  { label: "Community", href: "#community" },
+  { label: "Home", href: "#home", path: "/" },
+  { label: "How It Works", href: "#how", path: "/" },
+  { label: "Levels", href: "#levels", path: "/" },
+  { label: "Roadmap", href: "#roadmap", path: "/" },
+  { label: "Community", href: "/community", path: "/community" },
 ];
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const { shortAddress, isConnected, connect } = useWallet();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -23,6 +25,23 @@ export function Navbar() {
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  const handleNavClick = (n: { label: string; href: string; path: string }) => {
+    if (n.href.startsWith("/")) {
+      navigate(n.href);
+    } else {
+      if (window.location.pathname !== "/") {
+        navigate("/");
+        setTimeout(() => {
+          const el = document.querySelector(n.href);
+          el?.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      } else {
+        const el = document.querySelector(n.href);
+        el?.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  };
 
   return (
     <header
@@ -33,15 +52,19 @@ export function Navbar() {
       }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 md:px-8">
-        <a href="#home" className="flex items-center gap-2.5">
+        <Link to="/" className="flex items-center gap-2.5">
           <Logo className="h-8 w-8" />
           <span className="font-display text-lg font-bold tracking-tight">BuilderVault</span>
-        </a>
+        </Link>
         <nav className="hidden items-center gap-8 md:flex">
           {NAV.map((n) => (
-            <a key={n.href} href={n.href} className="text-sm text-white/70 transition-colors hover:text-white">
+            <button
+              key={n.href}
+              onClick={() => handleNavClick(n)}
+              className="text-sm text-white/70 transition-colors hover:text-white"
+            >
               {n.label}
-            </a>
+            </button>
           ))}
         </nav>
         <div className="hidden md:block">
@@ -61,9 +84,13 @@ export function Navbar() {
           >
             <div className="flex flex-col gap-3">
               {NAV.map((n) => (
-                <a key={n.href} href={n.href} onClick={() => setOpen(false)} className="text-sm text-white/80 hover:text-white">
+                <button
+                  key={n.href}
+                  onClick={() => { handleNavClick(n); setOpen(false); }}
+                  className="text-left text-sm text-white/80 hover:text-white"
+                >
                   {n.label}
-                </a>
+                </button>
               ))}
               <ConnectButton isConnected={isConnected} shortAddress={shortAddress} onClick={connect} />
             </div>
