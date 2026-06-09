@@ -145,6 +145,7 @@ export function ProfilePage() {
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
     void loadProfile();
+    navigate("/community");
   };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

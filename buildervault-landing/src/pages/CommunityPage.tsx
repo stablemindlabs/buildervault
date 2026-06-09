@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { useWallet } from "@/hooks/useWallet";
 import { useCommunity, Post, Job, Comment } from "@/hooks/useCommunity";
+import { useLocation } from "react-router-dom";
 
 type Tab = "home" | "explore" | "notifications" | "following" | "messages" | "jobs";
 
@@ -47,6 +48,7 @@ const NAV_ITEMS = [
 ] as const;
 
 export function CommunityPage() {
+  const location = useLocation();
   const [tab, setTab] = useState<Tab>("home");
   const { isConnected, connect, address } = useWallet();
   const {
@@ -87,7 +89,7 @@ export function CommunityPage() {
       else if (tab === "jobs") await loadJobs();
     };
     void run();
-  }, [tab, loadPosts, loadJobs]);
+  }, [tab, loadPosts, loadJobs, location.key]);
 
   const handleVote = async (postId: string, value: 1 | -1) => {
     if (!address) { connect(); return; }
