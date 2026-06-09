@@ -49,10 +49,12 @@ export function ProfilePage() {
   const { address: paramAddress } = useParams<{ address: string }>();
   const navigate = useNavigate();
   const { address: myAddress, connect } = useWallet();
-  const { fetchPosts, votePost } = useCommunity();
 
-  const isOwn = myAddress?.toLowerCase() === paramAddress?.toLowerCase();
+  // isOwn: true if no param (own profile route) OR addresses match case-insensitively
+  const isOwn = !paramAddress || (!!myAddress && myAddress.toLowerCase() === paramAddress.toLowerCase());
   const targetAddress = paramAddress ?? myAddress ?? "";
+
+  const { fetchPosts, votePost } = useCommunity();
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -62,6 +64,7 @@ export function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   const [editUsername, setEditUsername] = useState("");
   const [editBio, setEditBio] = useState("");
@@ -74,15 +77,15 @@ export function ProfilePage() {
     let { data } = await supabase
       .from("profiles")
       .select("*")
-      .eq("wallet_address", targetAddress)
+      .eq("wallet_address", targetAddress.toLowerCase())
       .single();
 
     if (!data) {
-      await supabase.from("profiles").insert({ wallet_address: targetAddress });
+      await supabase.from("profiles").insert({ wallet_address: targetAddress.toLowerCase() });
       const { data: newData } = await supabase
         .from("profiles")
         .select("*")
-        .eq("wallet_address", targetAddress)
+        .eq("wallet_address", targetAddress.toLowerCase())
         .single();
       data = newData;
     }
@@ -94,12 +97,12 @@ export function ProfilePage() {
     const { count: followers } = await supabase
       .from("follows")
       .select("*", { count: "exact", head: true })
-      .eq("following", targetAddress);
+      .eq("following", targetAddress.toLowerCase());
 
     const { count: following } = await supabase
       .from("follows")
       .select("*", { count: "exact", head: true })
-      .eq("follower", targetAddress);
+      .eq("follower", targetAddress.toLowerCase());
 
     setFollowerCount(followers ?? 0);
     setFollowingCount(following ?? 0);
@@ -108,8 +111,8 @@ export function ProfilePage() {
       const { data: followData } = await supabase
         .from("follows")
         .select("follower")
-        .eq("follower", myAddress)
-        .eq("following", targetAddress)
+        .eq("follower", myAddress.toLowerCase())
+        .eq("following", targetAddress.toLowerCase())
         .single();
       setIsFollowing(!!followData);
     }
@@ -137,8 +140,10 @@ export function ProfilePage() {
     await supabase
       .from("profiles")
       .update({ username: editUsername.trim() || null, bio: editBio.trim() || null })
-      .eq("wallet_address", myAddress);
+      .eq("wallet_address", myAddress.toLowerCase());
     setEditing(false);
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 3000);
     void loadProfile();
   };
 
@@ -147,11 +152,11 @@ export function ProfilePage() {
     if (!file || !myAddress) return;
     setUploading(true);
     const ext = file.name.split(".").pop();
-    const path = `${myAddress}.${ext}`;
+    const path = `${myAddress.toLowerCase()}.${ext}`;
     const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
     if (!error) {
       const { data } = supabase.storage.from("avatars").getPublicUrl(path);
-      await supabase.from("profiles").update({ avatar_url: data.publicUrl }).eq("wallet_address", myAddress);
+      await supabase.from("profiles").update({ avatar_url: data.publicUrl }).eq("wallet_address", myAddress.toLowerCase());
       void loadProfile();
     }
     setUploading(false);
@@ -161,11 +166,14 @@ export function ProfilePage() {
     if (!myAddress) { connect(); return; }
     if (isFollowing) {
       await supabase.from("follows").delete()
-        .eq("follower", myAddress).eq("following", targetAddress);
+        .eq("follower", myAddress.toLowerCase()).eq("following", targetAddress.toLowerCase());
       setIsFollowing(false);
       setFollowerCount((c) => c - 1);
     } else {
-      await supabase.from("follows").insert({ follower: myAddress, following: targetAddress });
+      await supabase.from("follows").insert({
+        follower: myAddress.toLowerCase(),
+        following: targetAddress.toLowerCase()
+      });
       setIsFollowing(true);
       setFollowerCount((c) => c + 1);
     }
@@ -180,6 +188,18 @@ export function ProfilePage() {
   const copyAddress = () => {
     void navigator.clipboard.writeText(targetAddress);
   };
+
+  // If no wallet connected and no param, show connect prompt
+  if (!targetAddress) {
+    return (
+      <div className="min-h-screen bg-[#0A0F1E] pt-20 flex flex-col items-center justify-center gap-4">
+        <p className="text-white/50 text-sm">Connect your wallet to view your profile</p>
+        <button onClick={connect} className="rounded-full bg-gradient-to-r from-[#6EE7B7] to-[#22D3EE] px-6 py-2.5 text-sm font-bold text-[#0A0F1E]">
+          Connect Wallet
+        </button>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -215,27 +235,42 @@ export function ProfilePage() {
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
-                  className="absolute bottom-1 right-1 h-7 w-7 rounded-full bg-[#0A0F1E] border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors"
+                  title="Upload photo"
+                  className="absolute bottom-1 right-1 h-8 w-8 rounded-full bg-[#0A0F1E] border-2 border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors"
                 >
-                  {uploading ? <Loader2 size={12} className="animate-spin text-white" /> : <Camera size={12} className="text-white" />}
+                  {uploading ? <Loader2 size={14} className="animate-spin text-white" /> : <Camera size={14} className="text-white" />}
                 </button>
               )}
               <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              {saveSuccess && (
+                <span className="text-xs text-[#6EE7B7] flex items-center gap-1">
+                  <Check size={12} /> Saved!
+                </span>
+              )}
               {isOwn ? (
                 editing ? (
                   <div className="flex gap-2">
-                    <button onClick={() => setEditing(false)} className="rounded-full border border-white/20 px-4 py-1.5 text-sm text-white/60 hover:bg-white/5 flex items-center gap-1.5">
+                    <button
+                      onClick={() => { setEditing(false); }}
+                      className="rounded-full border border-white/20 px-4 py-1.5 text-sm text-white/60 hover:bg-white/5 flex items-center gap-1.5"
+                    >
                       <X size={14} /> Cancel
                     </button>
-                    <button onClick={() => void handleSave()} className="rounded-full bg-white text-[#0A0F1E] px-4 py-1.5 text-sm font-bold flex items-center gap-1.5">
+                    <button
+                      onClick={() => void handleSave()}
+                      className="rounded-full bg-white text-[#0A0F1E] px-4 py-1.5 text-sm font-bold flex items-center gap-1.5"
+                    >
                       <Check size={14} /> Save
                     </button>
                   </div>
                 ) : (
-                  <button onClick={() => setEditing(true)} className="rounded-full border border-white/20 px-4 py-1.5 text-sm font-bold text-white hover:bg-white/5 flex items-center gap-1.5">
+                  <button
+                    onClick={() => setEditing(true)}
+                    className="rounded-full border border-white/20 px-4 py-1.5 text-sm font-bold text-white hover:bg-white/5 flex items-center gap-1.5 transition-colors"
+                  >
                     <Edit3 size={14} /> Edit Profile
                   </button>
                 )
@@ -255,28 +290,36 @@ export function ProfilePage() {
           </div>
 
           {editing ? (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div>
-                <label className="text-[11px] uppercase tracking-wider text-white/40">Display Name</label>
+                <label className="text-[11px] uppercase tracking-wider text-white/40 font-medium">Display Name</label>
                 <input
                   value={editUsername}
                   onChange={(e) => setEditUsername(e.target.value)}
                   placeholder="Your name"
                   maxLength={30}
-                  className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#6EE7B7]/40 focus:outline-none"
+                  className="mt-1.5 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/30 focus:border-[#6EE7B7]/40 focus:outline-none"
                 />
               </div>
               <div>
-                <label className="text-[11px] uppercase tracking-wider text-white/40">Bio</label>
+                <label className="text-[11px] uppercase tracking-wider text-white/40 font-medium">Bio</label>
                 <textarea
                   value={editBio}
                   onChange={(e) => setEditBio(e.target.value)}
                   placeholder="Tell builders about yourself..."
                   maxLength={160}
                   rows={3}
-                  className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:border-[#6EE7B7]/40 focus:outline-none resize-none"
+                  className="mt-1.5 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/30 focus:border-[#6EE7B7]/40 focus:outline-none resize-none"
                 />
                 <p className="text-right text-xs text-white/30 mt-1">{editBio.length}/160</p>
+              </div>
+              <div className="flex justify-end gap-2 pt-1">
+                <button onClick={() => setEditing(false)} className="rounded-full border border-white/10 px-5 py-2 text-sm text-white/60 hover:bg-white/5">
+                  Cancel
+                </button>
+                <button onClick={() => void handleSave()} className="rounded-full bg-gradient-to-r from-[#6EE7B7] to-[#22D3EE] px-6 py-2 text-sm font-bold text-[#0A0F1E]">
+                  Save Changes
+                </button>
               </div>
             </div>
           ) : (
@@ -290,6 +333,11 @@ export function ProfilePage() {
               </button>
               {profile?.bio && (
                 <p className="mt-3 text-[15px] text-white/80 leading-relaxed">{profile.bio}</p>
+              )}
+              {isOwn && !profile?.username && !profile?.bio && (
+                <p className="mt-3 text-sm text-white/30 italic">
+                  Click "Edit Profile" to add your name and bio
+                </p>
               )}
             </div>
           )}
