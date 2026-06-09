@@ -56,8 +56,26 @@ export function useWallet() {
 
   const disconnect = useCallback(() => setAddress(null), []);
 
+  // Auto-detect existing connection on page load
   useEffect(() => {
     if (typeof window === "undefined" || !window.ethereum) return;
+
+    // Check if already connected
+    const checkConnection = async () => {
+      try {
+        const accounts = (await window.ethereum!.request({
+          method: "eth_accounts",
+        })) as string[];
+        if (accounts?.[0]) {
+          setAddress(accounts[0]);
+        }
+      } catch {
+        // ignore
+      }
+    };
+    void checkConnection();
+
+    // Listen for account changes
     const handler = (...args: unknown[]) => {
       const accs = args[0] as string[];
       setAddress(accs?.[0] ?? null);
