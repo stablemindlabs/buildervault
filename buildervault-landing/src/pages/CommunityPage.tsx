@@ -49,7 +49,18 @@ const NAV_ITEMS = [
 export function CommunityPage() {
   const [tab, setTab] = useState<Tab>("home");
   const { isConnected, connect, address } = useWallet();
-  const community = useCommunity();
+  const {
+    loading,
+    error,
+    fetchPosts,
+    createPost,
+    votePost,
+    fetchComments,
+    createComment,
+    fetchJobs,
+    createJob,
+    applyJob,
+  } = useCommunity();
   const navigate = useNavigate();
 
   const [posts, setPosts] = useState<Post[]>([]);
@@ -58,17 +69,17 @@ export function CommunityPage() {
 
   const loadPosts = useCallback(async () => {
     setRefreshing(true);
-    const data = await community.fetchPosts(address ?? undefined);
+    const data = await fetchPosts(address ?? undefined);
     setPosts(data);
     setRefreshing(false);
-  }, [community, address]);
+  }, [fetchPosts, address]); 
 
   const loadJobs = useCallback(async () => {
     setRefreshing(true);
-    const data = await community.fetchJobs();
+    const data = await fetchJobs();
     setJobs(data);
     setRefreshing(false);
-  }, [community]);
+  }, [fetchJobs]); 
 
   useEffect(() => {
     const run = async () => {
@@ -80,7 +91,7 @@ export function CommunityPage() {
 
   const handleVote = async (postId: string, value: 1 | -1) => {
     if (!address) { connect(); return; }
-    await community.votePost(address, postId, value);
+    await votePost(address, postId, value);
     void loadPosts();
   };
 
@@ -154,11 +165,11 @@ export function CommunityPage() {
                 isConnected={isConnected}
                 connect={connect}
                 handleVote={handleVote}
-                loading={community.loading}
+                loading={loading}
                 refreshing={refreshing}
-                createPost={community.createPost}
-                fetchComments={community.fetchComments}
-                createComment={community.createComment}
+                createPost={createPost}
+                fetchComments={fetchComments}
+                createComment={createComment}
                 loadPosts={loadPosts}
                 navigate={navigate}
               />
@@ -169,9 +180,9 @@ export function CommunityPage() {
                 address={address}
                 isConnected={isConnected}
                 connect={connect}
-                createJob={community.createJob}
-                applyJob={community.applyJob}
-                loading={community.loading}
+                createJob={createJob}
+                applyJob={applyJob}
+                loading={loading}
                 refreshing={refreshing}
                 loadJobs={loadJobs}
               />
