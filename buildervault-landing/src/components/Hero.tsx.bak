@@ -1,23 +1,18 @@
-import { motion } from "framer-motion";
+﻿import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { useWallet } from "@/hooks/useWallet";
 import HeroCanvas from "./HeroCanvas";
 
-const EXPLORER =
-  "https://testnet.iopn.tech/address/0x876d81a05900aa02Da17320cB521ce1FF19F720A";
+const EXPLORER = "https://testnet.iopn.tech/address/0x876d81a05900aa02Da17320cB521ce1FF19F720A";
 
 export function Hero() {
   const { connect } = useWallet();
   return (
-    <section
-      id="home"
-      className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28"
-    >
+    <section id="home" className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28">
       <div className="mesh-bg absolute inset-0 -z-10" />
       <div className="dot-grid absolute inset-0 -z-10 opacity-50" />
       <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-5 md:px-8 lg:grid-cols-2">
 
-        {/* Left — text */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -33,9 +28,7 @@ export function Hero() {
             <span className="gradient-text">Built One Season at a Time.</span>
           </h1>
           <p className="max-w-xl text-base text-white/60 md:text-lg">
-            BuilderVault scores your Web3 builder reputation based on verified
-            contract deployments on OPN Chain. Lock your commitment, earn your
-            level, build your legacy.
+            BuilderVault scores your Web3 builder reputation based on verified contract deployments on OPN Chain. Lock your commitment, earn your level, build your legacy.
           </p>
           <div className="flex flex-wrap gap-3 pt-2">
             <button
@@ -44,7 +37,7 @@ export function Hero() {
             >
               Connect Wallet and Get Scored
             </button>
-            <a
+            
               href={EXPLORER}
               target="_blank"
               rel="noreferrer"
@@ -55,7 +48,6 @@ export function Hero() {
           </div>
         </motion.div>
 
-        {/* Right — 3D Logo */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
