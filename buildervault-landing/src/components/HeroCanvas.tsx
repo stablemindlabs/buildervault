@@ -2,6 +2,7 @@ import { useRef, useMemo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, Environment } from '@react-three/drei'
 import * as THREE from 'three'
+/// <reference types="@react-three/fiber" />
 
 function applyGradient(geometry: THREE.BufferGeometry) {
   const positions = geometry.attributes.position
